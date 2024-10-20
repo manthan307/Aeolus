@@ -22,7 +22,7 @@ class _LoginPage extends State<LoginPage> {
             child: Row(
               children: [
                 Container(
-                  width: selectedpage == 0 ? 25 : 15,
+                  width: selectedpage == 0 ? 25 : 12,
                   height: 12,
                   margin: const EdgeInsets.fromLTRB(0, 0, 6, 0),
                   decoration: const BoxDecoration(
@@ -30,7 +30,15 @@ class _LoginPage extends State<LoginPage> {
                       borderRadius: BorderRadius.all(Radius.circular(25))),
                 ),
                 Container(
-                  width: selectedpage == 1 ? 25 : 15,
+                  width: selectedpage == 1 ? 25 : 12,
+                  height: 12,
+                  margin: const EdgeInsets.fromLTRB(0, 0, 6, 0),
+                  decoration: const BoxDecoration(
+                      color: Color(0xFFD9D9D9),
+                      borderRadius: BorderRadius.all(Radius.circular(25))),
+                ),
+                Container(
+                  width: selectedpage == 2 ? 25 : 12,
                   height: 12,
                   margin: const EdgeInsets.fromLTRB(0, 0, 6, 0),
                   decoration: const BoxDecoration(
@@ -57,7 +65,7 @@ class _LoginPage extends State<LoginPage> {
                 children: [
                   Image(image: AssetImage("assets/img/Login.png")),
                   Text(
-                    "Save Your Time !",
+                    "Save Your Time Using Aeolus!",
                     style: TextStyle(fontSize: 48, fontFamily: "Jaro"),
                     textAlign: TextAlign.center,
                   )
@@ -66,9 +74,20 @@ class _LoginPage extends State<LoginPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image(image: AssetImage("assets/img/Login.png")),
+                  Image(image: AssetImage("assets/img/expense.png")),
                   Text(
-                    "Save Time By Making Todo List!",
+                    "Track Your Expense Using Aeolus!",
+                    style: TextStyle(fontSize: 48, fontFamily: "Jaro"),
+                    textAlign: TextAlign.center,
+                  )
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image(image: AssetImage("assets/img/fire.png")),
+                  Text(
+                    "Talk With Your Friend's!",
                     style: TextStyle(fontSize: 48, fontFamily: "Jaro"),
                     textAlign: TextAlign.center,
                   )
