@@ -14,6 +14,7 @@ class _LoginPage extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        // backgroundColor: Widget,
         body: SafeArea(
       child: Column(
         children: [
@@ -23,7 +24,7 @@ class _LoginPage extends State<LoginPage> {
               children: [
                 Container(
                   width: selectedpage == 0 ? 25 : 12,
-                  height: 12,
+                  height: 10,
                   margin: const EdgeInsets.fromLTRB(0, 0, 6, 0),
                   decoration: const BoxDecoration(
                       color: Color(0xFFD9D9D9),
@@ -31,7 +32,7 @@ class _LoginPage extends State<LoginPage> {
                 ),
                 Container(
                   width: selectedpage == 1 ? 25 : 12,
-                  height: 12,
+                  height: 10,
                   margin: const EdgeInsets.fromLTRB(0, 0, 6, 0),
                   decoration: const BoxDecoration(
                       color: Color(0xFFD9D9D9),
@@ -39,7 +40,7 @@ class _LoginPage extends State<LoginPage> {
                 ),
                 Container(
                   width: selectedpage == 2 ? 25 : 12,
-                  height: 12,
+                  height: 10,
                   margin: const EdgeInsets.fromLTRB(0, 0, 6, 0),
                   decoration: const BoxDecoration(
                       color: Color(0xFFD9D9D9),
@@ -66,7 +67,7 @@ class _LoginPage extends State<LoginPage> {
                   Image(image: AssetImage("assets/img/Login.png")),
                   Text(
                     "Save Your Time Using Aeolus!",
-                    style: TextStyle(fontSize: 48, fontFamily: "Jaro"),
+                    style: TextStyle(fontSize: 44, fontFamily: "Jaro"),
                     textAlign: TextAlign.center,
                   )
                 ],
@@ -74,10 +75,10 @@ class _LoginPage extends State<LoginPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image(image: AssetImage("assets/img/expense.png")),
+                  Image(image: AssetImage("assets/img/productive.png")),
                   Text(
-                    "Track Your Expense Using Aeolus!",
-                    style: TextStyle(fontSize: 48, fontFamily: "Jaro"),
+                    "Stay Productive Using Aeolus!",
+                    style: TextStyle(fontSize: 44, fontFamily: "Jaro"),
                     textAlign: TextAlign.center,
                   )
                 ],
@@ -87,31 +88,36 @@ class _LoginPage extends State<LoginPage> {
                 children: [
                   Image(image: AssetImage("assets/img/fire.png")),
                   Text(
-                    "Talk With Your Friend's!",
-                    style: TextStyle(fontSize: 48, fontFamily: "Jaro"),
+                    "Maintain Your Health!",
+                    style: TextStyle(fontSize: 44, fontFamily: "Jaro"),
                     textAlign: TextAlign.center,
                   )
                 ],
               ),
             ],
           )),
-          ElevatedButton.icon(
-              onPressed: () {},
-              label: const Text(
-                "Continue with Google",
-                style: TextStyle(fontSize: 15),
-              ),
-              icon: Image.asset(
-                "assets/img/google_logo.png",
-                height: 35,
-              ),
-              style: ElevatedButton.styleFrom(
+          Container(
+            margin: const EdgeInsets.fromLTRB(0, 0, 0, 50),
+            child: ElevatedButton.icon(
+                onPressed: () {},
+                label: const Text(
+                  "Continue with Google",
+                  style: TextStyle(fontSize: 15, color: Colors.black),
+                ),
+                icon: Image.asset(
+                  "assets/img/google_logo.png",
+                  height: 35,
+                ),
+                style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xfff2f2f2),
+                  overlayColor: Colors.black26,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 5))),
-          const SizedBox(
-            height: 150,
-          )
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                )),
+          ),
+          // const SizedBox(
+          //   height: 80,
+          // )
         ],
       ),
     ));

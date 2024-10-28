@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "728690184400",
+    "project_id": "aeolus-cfb71",
+    "storage_bucket": "aeolus-cfb71.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728690184400:android:d5cf77d0ec6ac19e3c0ed5",
+        "android_client_info": {
+          "package_name": "com.manthan.aeolus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "728690184400-fgjr523qrq1p03rmsg4qiom4cgsaljbd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.manthan.aeolus",
+            "certificate_hash": "7bc0625af1ab62e7434e0a6f5eeeb51721792ed8"
+          }
+        },
+        {
+          "client_id": "728690184400-6rd8d3c5lttpd7ibefo6jo59jnjav8ec.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRFdKJTPN7i8iWxtiUtOp0VcHmmOKJXJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "728690184400-6rd8d3c5lttpd7ibefo6jo59jnjav8ec.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "728690184400-cchc96rvjkm2lkm5j3snfscacpf19r6k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.manthan.aeolus"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
