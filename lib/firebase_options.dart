@@ -63,9 +63,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '728690184400',
     projectId: 'aeolus-cfb71',
     storageBucket: 'aeolus-cfb71.appspot.com',
-    androidClientId: '728690184400-fgjr523qrq1p03rmsg4qiom4cgsaljbd.apps.googleusercontent.com',
-    iosClientId: '728690184400-cchc96rvjkm2lkm5j3snfscacpf19r6k.apps.googleusercontent.com',
+    androidClientId:
+        '728690184400-fgjr523qrq1p03rmsg4qiom4cgsaljbd.apps.googleusercontent.com',
+    iosClientId:
+        '728690184400-cchc96rvjkm2lkm5j3snfscacpf19r6k.apps.googleusercontent.com',
     iosBundleId: 'com.manthan.aeolus',
   );
-
 }
