@@ -8,7 +8,7 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-        length: 5,
+        length: 4,
         child: Scaffold(
           backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
           appBar: AppBar(
@@ -47,7 +47,6 @@ class Home extends StatelessWidget {
                 tabs: const [
                   Icon(Iconsax.task),
                   Icon(Iconsax.calendar),
-                  Icon(Icons.newspaper),
                   Icon(Iconsax.clock),
                   Icon(Iconsax.heart)
                 ]),
@@ -55,7 +54,6 @@ class Home extends StatelessWidget {
           body: const TabBarView(children: [
             Tasks(),
             Center(child: Text("calendar")),
-            Center(child: Text("News")),
             Center(child: Text("clock")),
             Center(child: Text("Health")),
           ]),
