@@ -36,14 +36,14 @@ class Home extends StatelessWidget {
             height: 70,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
-              color: Theme.of(context).cardColor,
+              color: const Color(0xffd6d0f0),
             ),
             child: TabBar(
                 dividerHeight: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 indicatorWeight: 9,
                 splashBorderRadius: BorderRadius.circular(50),
-                unselectedLabelColor: Colors.white,
+                unselectedLabelColor: Colors.black.withOpacity(0.8),
                 tabs: const [
                   Icon(Iconsax.task),
                   Icon(Iconsax.calendar),

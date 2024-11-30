@@ -1,5 +1,7 @@
 import 'package:aeolus/db/type.dart';
+import 'package:aeolus/provider/task.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
 class Tasklist extends StatefulWidget {
@@ -12,15 +14,10 @@ class Tasklist extends StatefulWidget {
 }
 
 class _Tasklist extends State<Tasklist> {
-  List<Task> tasks = [
-    Task(id: 0, title: "Complete Chemistry Notes.", time: DateTime.now()),
-    Task(id: 1, title: "Workout", repeat: true, time: DateTime.now()),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Card(
-        elevation: 10,
+        elevation: 20,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
           width: MediaQuery.of(context).size.width,
@@ -29,90 +26,137 @@ class _Tasklist extends State<Tasklist> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Padding(
-                padding: EdgeInsets.only(left: 10),
+                padding: EdgeInsets.only(left: 10, bottom: 20),
                 child: Text(
                   "Tasks",
                   style: TextStyle(fontSize: 20),
                 ),
               ),
-              ReorderableListView(
-                shrinkWrap: true,
-                children: <Widget>[
-                  for (int index = 0; index < tasks.length; index += 1)
-                    Tasktile(
-                      task: tasks[index],
-                      key: Key("$index"),
-                    )
-                ],
-                onReorder: (oldIndex, newIndex) {
-                  setState(() {
-                    if (oldIndex < newIndex) {
-                      newIndex -= 1;
-                    }
-                    final item = tasks.removeAt(oldIndex);
-                    tasks.insert(newIndex, item);
-                  });
+              Consumer(
+                builder: (context, ref, child) {
+                  final AsyncValue<List<Task>> list = ref.watch(taskProvider);
+
+                  if (list.isLoading) {
+                    return const CircularProgressIndicator();
+                  } else if (list.valueOrNull!.isEmpty) {
+                    return empty();
+                  } else {
+                    return ReorderableListView(
+                      shrinkWrap: true,
+                      children: <Widget>[
+                        for (int index = 0;
+                            index < list.value!.length;
+                            index += 1)
+                          ListTile(
+                            key: Key(list.value![index].id),
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  list.value![index].title,
+                                  style: TextStyle(
+                                      decoration: list.value![index].complete
+                                          ? TextDecoration.lineThrough
+                                          : TextDecoration.none),
+                                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    // list.value![index].createdAt
+                                    //             .difference(DateTime(now.year,
+                                    //                 now.month, now.day))
+                                    //             .inDays
+                                    date(list.value![index].createdAt),
+                                    list.value![index].repeat
+                                        ? Container(
+                                            margin:
+                                                const EdgeInsets.only(left: 10),
+                                            child: const Icon(
+                                              Iconsax.repeat,
+                                              size: 15,
+                                            ),
+                                          )
+                                        : const SizedBox()
+                                  ],
+                                )
+                              ],
+                            ),
+                            leading: Checkbox(
+                              value: list.value![index].complete,
+                              shape: const CircleBorder(),
+                              onChanged: (value) {
+                                //pending...
+                              },
+                            ),
+                            trailing: IconButton(
+                                onPressed: () {
+                                  void delete() {
+                                    ref
+                                        .watch(taskProvider.notifier)
+                                        .delete(list.value![index]);
+                                  }
+
+                                  delete();
+                                },
+                                icon: const Icon(Iconsax.trash)),
+                          )
+                      ],
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          // if (oldIndex < newIndex) {
+                          //   newIndex -= 1;
+                          // }
+                          // final item = tasks.removeAt(oldIndex);
+                          // tasks.insert(newIndex, item);
+                        });
+                      },
+                    );
+                  }
                 },
-              ),
+              )
             ],
           ),
         ));
   }
-}
 
-class Tasktile extends StatefulWidget {
-  final Task task;
-
-  const Tasktile({super.key, required this.task});
-
-  @override
-  State<StatefulWidget> createState() => _Tasktile();
-}
-
-class _Tasktile extends State<Tasktile> {
-  bool completed = false;
-  bool saved = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.task.title,
-            style: TextStyle(
-                decoration: completed
-                    ? TextDecoration.lineThrough
-                    : TextDecoration.none),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
+  SizedBox empty() => SizedBox(
+        child: Center(
+          child: Column(
             children: [
-              const Text("Today, 7:45 PM"),
-              widget.task.repeat
-                  ? Container(
-                      margin: const EdgeInsets.only(left: 10),
-                      child: const Icon(
-                        Iconsax.repeat,
-                        size: 15,
-                      ),
-                    )
-                  : const SizedBox()
+              Image.asset(
+                "assets/img/empty.png",
+                cacheHeight: 150,
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Text(
+                "Try Adding tasks by clicking '+' icon.",
+                style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.color
+                        ?.withOpacity(0.7)),
+              )
             ],
-          )
-        ],
-      ),
-      leading: Checkbox(
-        value: completed,
-        shape: const CircleBorder(),
-        onChanged: (value) {
-          setState(() {
-            completed = value!;
-          });
-        },
-      ),
-    );
+          ),
+        ),
+      );
+}
+
+date(DateTime createdAt) {
+  DateTime now = DateTime.now();
+  var day = createdAt.difference(DateTime(now.year, now.month, now.day)).inDays;
+
+  if (day == 0) {
+    return const Text("Today");
+  } else if (day == -1) {
+    return const Text("Yesterday");
+  } else if (day == 1) {
+    return const Text("Tomorrow");
+  } else {
+    return Text(createdAt.day.toString() + createdAt.month.toString());
   }
 }

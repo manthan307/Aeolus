@@ -20,6 +20,7 @@ class _Tasks extends State<Tasks> {
           child: const Tasklist(),
         ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xffd6d0f0),
           onPressed: () {
             showModalBottomSheet<void>(
               context: context,

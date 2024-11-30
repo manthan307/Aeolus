@@ -1,196 +1,253 @@
-import 'package:flutter/cupertino.dart';
+import 'package:aeolus/db/type.dart';
+import 'package:aeolus/provider/task.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 
-class TaskSheet extends StatefulWidget {
+class TaskSheet extends ConsumerStatefulWidget {
   const TaskSheet({super.key});
 
   @override
-  State<StatefulWidget> createState() => _TaskSheet();
+  ConsumerState<ConsumerStatefulWidget> createState() => _TaskSheet();
 }
 
-class _TaskSheet extends State<TaskSheet> {
+class _TaskSheet extends ConsumerState<TaskSheet> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final titleController = TextEditingController();
+  final descriptionController = TextEditingController();
+
   DateTime selectedDate = DateTime.now().add(const Duration(minutes: 5));
   bool remind = false;
   bool repeat = false;
+  TimeOfDay selectedTime = TimeOfDay.now();
+
+  Future<void>? _pendingAddTask;
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+          child: Card(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CalendarDatePicker(
+                      initialDate: selectedDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(9999),
+                      onDateChanged: (value) {
+                        setState(() {
+                          selectedDate = value;
+                        });
+                      }),
+                  const Divider(
+                    height: 0,
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        _selectTime(context);
+                      },
+                      label: const Text("Set Time"),
+                      icon: const Icon(Iconsax.clock),
+                      style: ButtonStyle(
+                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0),
+                        )),
+                      ),
+                    ),
+                  ),
+                  const Divider(
+                    height: 0,
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: TextButton.icon(
+                      onPressed: () {},
+                      label: const Text("Repeat"),
+                      iconAlignment: IconAlignment.start,
+                      icon: const Icon(Iconsax.repeat),
+                      style: ButtonStyle(
+                        textStyle: const WidgetStatePropertyAll(
+                            TextStyle(textBaseline: TextBaseline.alphabetic)),
+                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0),
+                        )),
+                      ),
+                    ),
+                  ),
+                  const Divider(
+                    height: 0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text("Cancel")),
+                      TextButton(onPressed: () {}, child: const Text("Done"))
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: selectedTime,
+    );
+
+    if (pickedTime != null && pickedTime != selectedTime) {
+      setState(() {
+        selectedTime = pickedTime;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const SizedBox(
-            height: 20,
-          ),
-          Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  right: 20,
-                  left: 20),
-              child: Form(
-                  key: _formKey,
-                  child: Column(children: <Widget>[
-                    TextFormField(
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                          hintText: 'Title',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(25)),
-                          )),
-                      maxLength: 25,
-                      validator: (String? value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter title';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        hintText: 'Description',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(25)),
+    return FutureBuilder(
+      future: _pendingAddTask,
+      builder: (context, snapshot) {
+        final isErrored = snapshot.hasError &&
+            snapshot.connectionState != ConnectionState.waiting;
+
+        const snackBar = SnackBar(
+          content: Text("Oops!! Something went wrong."),
+        );
+        if (isErrored) {
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const SizedBox(
+                height: 20,
+              ),
+              Padding(
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                      right: 20,
+                      left: 20),
+                  child: Form(
+                      key: _formKey,
+                      child: Column(children: <Widget>[
+                        TextFormField(
+                          autofocus: true,
+                          decoration: const InputDecoration(
+                              hintText: 'Title',
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(25)),
+                              )),
+                          maxLength: 25,
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter title';
+                            }
+                            return null;
+                          },
+                          controller: titleController,
                         ),
-                      ),
-                      minLines: 2,
-                      maxLines: 10,
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        TextFormField(
+                          controller: descriptionController,
+                          decoration: const InputDecoration(
+                            hintText: 'Description',
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(25)),
+                            ),
+                          ),
+                          minLines: 2,
+                          maxLines: 10,
+                        ),
+                        const SizedBox(height: 20),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
-                                onPressed: () => {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return Center(
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 20,
-                                                      horizontal: 0),
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.9,
-                                              child: Card(
-                                                  child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  SizedBox(
-                                                    height: 200,
-                                                    child: CupertinoDatePicker(
-                                                      mode:
-                                                          CupertinoDatePickerMode
-                                                              .dateAndTime,
-                                                      initialDateTime:
-                                                          selectedDate,
-                                                      minimumDate:
-                                                          DateTime.now().add(
-                                                              const Duration(
-                                                                  minutes: 1)),
-                                                      onDateTimeChanged:
-                                                          (value) {
-                                                        setState(() {
-                                                          selectedDate = value;
-                                                        });
-                                                      },
-                                                    ),
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
-                                                    children: [
-                                                      TextButton(
-                                                          onPressed: () {
-                                                            Navigator.pop(
-                                                                context);
-                                                          },
-                                                          child: const Text(
-                                                              "Done")),
-                                                    ],
-                                                  )
-                                                ],
-                                              )),
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    },
+                                onPressed: () => {_selectDate(context)},
                                 icon: const Icon(Iconsax.calendar)),
-                            IconButton(
+                            ElevatedButton(
                                 onPressed: () {
-                                  setState(() {
-                                    remind = !remind;
-                                  });
+                                  if (_formKey.currentState!.validate()) {
+                                    final future = ref
+                                        .read(taskProvider.notifier)
+                                        .addTodo(Task(
+                                            title: titleController.text,
+                                            time: selectedDate,
+                                            createdAt: DateTime.now(),
+                                            description:
+                                                descriptionController.text,
+                                            remind: remind,
+                                            repeat: repeat));
+
+                                    setState(() {
+                                      _pendingAddTask = future;
+                                      Navigator.pop(context);
+                                    });
+                                  }
                                 },
                                 style: ButtonStyle(
-                                    backgroundColor: WidgetStatePropertyAll(
-                                        remind
-                                            ? Theme.of(context)
+                                    backgroundColor: WidgetStateProperty.all(
+                                  Theme.of(context)
+                                      .buttonTheme
+                                      .colorScheme!
+                                      .onPrimaryContainer,
+                                )),
+                                child: snapshot.connectionState ==
+                                        ConnectionState.waiting
+                                    ? const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : Text(
+                                        "Done",
+                                        style: TextStyle(
+                                            color: Theme.of(context)
                                                 .buttonTheme
                                                 .colorScheme
-                                                ?.primary
-                                                .withOpacity(0.2)
-                                            : Colors.transparent)),
-                                icon: Icon(remind
-                                    ? Icons.alarm_on_outlined
-                                    : Icons.alarm_off_outlined)),
-                            IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    repeat = !repeat;
-                                  });
-                                },
-                                style: ButtonStyle(
-                                    backgroundColor: WidgetStatePropertyAll(
-                                        repeat
-                                            ? Theme.of(context)
-                                                .buttonTheme
-                                                .colorScheme
-                                                ?.primary
-                                                .withOpacity(0.2)
-                                            : Colors.transparent)),
-                                icon: const Icon(Iconsax.repeat))
+                                                ?.onPrimary),
+                                      )),
                           ],
                         ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // Process data.
-                            }
-                          },
-                          style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(
-                            Theme.of(context)
-                                .buttonTheme
-                                .colorScheme!
-                                .onPrimaryContainer,
-                          )),
-                          child: Text(
-                            "Done",
-                            style: TextStyle(
-                                color: Theme.of(context)
-                                    .buttonTheme
-                                    .colorScheme
-                                    ?.onPrimary),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                  ]))),
-        ],
-      ),
+                        const SizedBox(height: 20),
+                      ]))),
+            ],
+          ),
+        );
+      },
     );
   }
 }

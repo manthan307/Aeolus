@@ -1,11 +1,16 @@
 import 'package:aeolus/Screens/home.dart';
+import 'package:aeolus/db/type.dart';
 import 'package:aeolus/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(TaskAdapter());
+  await Hive.openBox<Task>("tasks");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -19,14 +24,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aeolus',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        primaryColor: const Color(0xff8ebbff),
-        appBarTheme: const AppBarTheme(backgroundColor: Color(0xff24293e)),
-        cardColor: const Color(0xff2f3651),
-        brightness: Brightness.dark,
-      ),
       themeMode: ThemeMode.dark,
+      theme: ThemeData(colorSchemeSeed: const Color(0xffd6d0f0)),
       home: const Home(),
     );
   }
