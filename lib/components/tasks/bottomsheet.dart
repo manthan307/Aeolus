@@ -2,10 +2,11 @@ import 'package:aeolus/db/type.dart';
 import 'package:aeolus/provider/task.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax/iconsax.dart';
 
 class TaskSheet extends ConsumerStatefulWidget {
-  const TaskSheet({super.key});
+  final Task? task;
+
+  const TaskSheet({this.task, super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _TaskSheet();
@@ -16,118 +17,25 @@ class _TaskSheet extends ConsumerState<TaskSheet> {
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
 
-  DateTime selectedDate = DateTime.now().add(const Duration(minutes: 5));
-  bool remind = false;
-  bool repeat = false;
-  TimeOfDay selectedTime = TimeOfDay.now();
-
   Future<void>? _pendingAddTask;
 
   @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with task data if editing an existing task
+    if (widget.task != null) {
+      titleController.value = TextEditingValue(text: widget.task!.title);
+      descriptionController.value =
+          TextEditingValue(text: widget.task!.description);
+    }
+  }
+
+  @override
   void dispose() {
+    // Dispose controllers to free up resources
     titleController.dispose();
     descriptionController.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDialog(
-      context: context,
-      builder: (context) {
-        return Center(
-          child: Card(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CalendarDatePicker(
-                      initialDate: selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(9999),
-                      onDateChanged: (value) {
-                        setState(() {
-                          selectedDate = value;
-                        });
-                      }),
-                  const Divider(
-                    height: 0,
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: TextButton.icon(
-                      onPressed: () {
-                        _selectTime(context);
-                      },
-                      label: const Text("Set Time"),
-                      icon: const Icon(Iconsax.clock),
-                      style: ButtonStyle(
-                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        )),
-                      ),
-                    ),
-                  ),
-                  const Divider(
-                    height: 0,
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: TextButton.icon(
-                      onPressed: () {},
-                      label: const Text("Repeat"),
-                      iconAlignment: IconAlignment.start,
-                      icon: const Icon(Iconsax.repeat),
-                      style: ButtonStyle(
-                        textStyle: const WidgetStatePropertyAll(
-                            TextStyle(textBaseline: TextBaseline.alphabetic)),
-                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        )),
-                      ),
-                    ),
-                  ),
-                  const Divider(
-                    height: 0,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text("Cancel")),
-                      TextButton(onPressed: () {}, child: const Text("Done"))
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: selectedTime,
-    );
-
-    if (pickedTime != null && pickedTime != selectedTime) {
-      setState(() {
-        selectedTime = pickedTime;
-      });
-    }
   }
 
   @override
@@ -195,29 +103,43 @@ class _TaskSheet extends ConsumerState<TaskSheet> {
                         ),
                         const SizedBox(height: 20),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            IconButton(
-                                onPressed: () => {_selectDate(context)},
-                                icon: const Icon(Iconsax.calendar)),
                             ElevatedButton(
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
-                                    final future = ref
-                                        .read(taskProvider.notifier)
-                                        .addTodo(Task(
+                                    if (widget.task == null) {
+                                      // Add new task
+                                      final future = ref
+                                          .read(taskProvider.notifier)
+                                          .addTodo(Task(
                                             title: titleController.text,
-                                            time: selectedDate,
                                             createdAt: DateTime.now(),
                                             description:
                                                 descriptionController.text,
-                                            remind: remind,
-                                            repeat: repeat));
-
-                                    setState(() {
-                                      _pendingAddTask = future;
-                                      Navigator.pop(context);
-                                    });
+                                          ));
+                                      setState(() {
+                                        _pendingAddTask = future;
+                                        Navigator.pop(context);
+                                      });
+                                    } else {
+                                      // Update existing task
+                                      final future = ref
+                                          .read(taskProvider.notifier)
+                                          .updateTask(
+                                              Task(
+                                                title: titleController.text,
+                                                createdAt:
+                                                    widget.task!.createdAt,
+                                                description:
+                                                    descriptionController.text,
+                                              ),
+                                              widget.task!);
+                                      setState(() {
+                                        _pendingAddTask = future;
+                                        Navigator.pop(context);
+                                      });
+                                    }
                                   }
                                 },
                                 style: ButtonStyle(
@@ -233,7 +155,7 @@ class _TaskSheet extends ConsumerState<TaskSheet> {
                                         child: CircularProgressIndicator(),
                                       )
                                     : Text(
-                                        "Done",
+                                        widget.task != null ? "Update" : "Done",
                                         style: TextStyle(
                                             color: Theme.of(context)
                                                 .buttonTheme

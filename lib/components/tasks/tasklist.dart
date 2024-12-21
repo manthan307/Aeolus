@@ -1,3 +1,4 @@
+import 'package:aeolus/components/tasks/bottomsheet.dart';
 import 'package:aeolus/db/type.dart';
 import 'package:aeolus/provider/task.dart';
 import 'package:flutter/material.dart';
@@ -43,12 +44,29 @@ class _Tasklist extends State<Tasklist> {
                   } else {
                     return ReorderableListView(
                       shrinkWrap: true,
+                      reverse: true,
                       children: <Widget>[
                         for (int index = 0;
                             index < list.value!.length;
                             index += 1)
                           ListTile(
                             key: Key(list.value![index].id),
+                            onTap: () {
+                              showModalBottomSheet<void>(
+                                context: context,
+                                showDragHandle: true,
+                                isScrollControlled: true,
+                                enableDrag: true,
+                                backgroundColor: Theme.of(context)
+                                    .appBarTheme
+                                    .backgroundColor,
+                                builder: (BuildContext context) {
+                                  return TaskSheet(
+                                    task: list.value![index],
+                                  );
+                                },
+                              );
+                            },
                             title: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -68,16 +86,6 @@ class _Tasklist extends State<Tasklist> {
                                     //                 now.month, now.day))
                                     //             .inDays
                                     date(list.value![index].createdAt),
-                                    list.value![index].repeat
-                                        ? Container(
-                                            margin:
-                                                const EdgeInsets.only(left: 10),
-                                            child: const Icon(
-                                              Iconsax.repeat,
-                                              size: 15,
-                                            ),
-                                          )
-                                        : const SizedBox()
                                   ],
                                 )
                               ],
@@ -146,7 +154,22 @@ class _Tasklist extends State<Tasklist> {
       );
 }
 
-date(DateTime createdAt) {
+Text date(DateTime createdAt) {
+  List months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "June",
+    "July",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ];
+
   DateTime now = DateTime.now();
   var day = createdAt.difference(DateTime(now.year, now.month, now.day)).inDays;
 
@@ -157,6 +180,6 @@ date(DateTime createdAt) {
   } else if (day == 1) {
     return const Text("Tomorrow");
   } else {
-    return Text(createdAt.day.toString() + createdAt.month.toString());
+    return Text("${createdAt.day} ${months[(createdAt.month.toInt()) - 1]}");
   }
 }
